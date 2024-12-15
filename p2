@@ -1,0 +1,73 @@
+import pandas as pd
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Input
+import matplotlib.pyplot as plt
+
+def train_neural_network(dataset_path, target_column=None, epochs=250, batch_size=10, validation_split=0.33):
+    """
+    Train a neural network on a dataset.
+
+    Parameters:
+    - dataset_path: Path to the CSV dataset.
+    - target_column: Name of the target column. If None, the last column is assumed to be the target.
+    - epochs: Number of training epochs.
+    - batch_size: Size of the batches used in training.
+    - validation_split: Fraction of the data to be used as validation data.
+    """
+
+    # Load the dataset
+    dataset = pd.read_csv(dataset_path)
+    data = pd.DataFrame(dataset)
+
+    # Display the first 5 rows of the dataset
+    print("First 5 rows of the dataset:")
+    print(data.head())
+
+    # If no target column is specified, assume the last column is the target
+    if target_column is None:
+        target_column = data.columns[-1]
+
+    # Prepare input (X) and output (Y)
+    X = data.drop([target_column], axis=1)  # Features: all columns except the target column
+    Y = data[target_column]                 # Target labels (assumed to be the last column or specified column
+
+    # Verify the number of features
+    print(f"Number of features: {X.shape[1]}")
+
+    # Build the neural network model
+    model = Sequential()
+    model.add(Input(shape=(X.shape[1],)))        # Input layer with the number of features dynamically set
+    model.add(Dense(12, activation='relu'))       # Hidden layer with 12 neurons and ReLU activation
+    model.add(Dense(8, activation='relu'))        # Hidden layer with 8 neurons and ReLU activation
+    model.add(Dense(1, activation='sigmoid'))     # Output layer with 1 neuron and sigmoid activation
+
+    # Compile the model
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+
+    # Train the model
+    history = model.fit(X, Y, validation_split=validation_split, epochs=epochs, batch_size=batch_size, verbose=1)
+
+    # Display the keys in the training history
+    print("Training history keys:", history.history.keys())
+
+    # Plot the training and validation accuracy
+    plt.plot(history.history['accuracy'])
+    plt.plot(history.history['val_accuracy'])
+    plt.title('Model Accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Validation'], loc='upper left')
+    plt.show()
+
+    # Plot the training and validation loss
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('Model Loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Validation'], loc='upper left')
+    plt.show()
+
+# Example usage:
+dataset_path = 'your path'  # Change this to the correct dataset path
+train_neural_network(dataset_path, target_column='', epochs=250, batch_size=10, validation_split=0.33)
